@@ -2,7 +2,7 @@
 
 [![smithery badge](https://smithery.ai/badge/@nickclyde/duckduckgo-mcp-server)](https://smithery.ai/server/@nickclyde/duckduckgo-mcp-server)
 
-A Model Context Protocol (MCP) server that provides web search capabilities through DuckDuckGo, with additional features for content fetching and parsing.
+A Model Context Protocol (MCP) server that provides web search capabilities through DuckDuckGo, with additional features for content fetching and parsing. Now with Databricks Apps support!
 
 <a href="https://glama.ai/mcp/servers/phcus2gcpn">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/phcus2gcpn/badge" alt="DuckDuckGo Server MCP server" />
@@ -15,6 +15,7 @@ A Model Context Protocol (MCP) server that provides web search capabilities thro
 - **Rate Limiting**: Built-in protection against rate limits for both search and content fetching
 - **Error Handling**: Comprehensive error handling and logging
 - **LLM-Friendly Output**: Results formatted specifically for large language model consumption
+- **Databricks Apps Integration**: Deploy and run on Databricks Apps with streamable HTTP transport
 
 ## Installation
 
@@ -69,6 +70,94 @@ mcp dev server.py
 # Install locally for testing with Claude Desktop
 mcp install server.py
 ```
+
+### Running on Databricks Apps
+
+This MCP server can be deployed on Databricks Apps for scalable, production-ready deployment.
+
+#### Prerequisites
+
+- Databricks CLI installed and configured
+- `uv` package manager
+
+#### Local Development with Databricks Mode
+
+Start the server locally with FastAPI and uvicorn:
+
+```bash
+# Install dependencies
+uv sync
+
+# Start the server with hot-reload
+uvicorn duckduckgo_mcp_server.app:app --reload
+
+# Or use the convenience command
+uv run duckduckgo-mcp-server-databricks
+```
+
+The server will be available at `http://localhost:8000` with a landing page and the MCP endpoint at `http://localhost:8000/mcp/`.
+
+#### Deploying to Databricks Apps
+
+There are two ways to deploy on Databricks Apps:
+
+##### Using `databricks apps` CLI
+
+1. Configure Databricks authentication:
+```bash
+export DATABRICKS_CONFIG_PROFILE=<your-profile-name>
+databricks auth login --profile "$DATABRICKS_CONFIG_PROFILE"
+```
+
+2. Create a Databricks app:
+```bash
+databricks apps create duckduckgo-mcp-server
+```
+
+3. Upload and deploy:
+```bash
+DATABRICKS_USERNAME=$(databricks current-user me | jq -r .userName)
+databricks sync . "/Users/$DATABRICKS_USERNAME/duckduckgo-mcp-server"
+databricks apps deploy duckduckgo-mcp-server --source-code-path "/Workspace/Users/$DATABRICKS_USERNAME/duckduckgo-mcp-server"
+```
+
+##### Using `databricks bundle` CLI
+
+1. Build the wheel and deploy using bundle:
+```bash
+uv build --wheel
+databricks bundle deploy
+databricks bundle run duckduckgo-mcp-server
+```
+
+#### Connecting to the Databricks-Deployed Server
+
+Use the Streamable HTTP transport with your app URL:
+
+```python
+from databricks.sdk import WorkspaceClient
+from databricks_mcp import DatabricksOAuthClientProvider
+from mcp.client.streamable_http import streamablehttp_client as connect
+from mcp import ClientSession
+
+client = WorkspaceClient()
+
+async def main():
+    app_url = "https://your.app.url.databricksapps.com/mcp/"
+    async with connect(app_url, auth=DatabricksOAuthClientProvider(client)) as (
+        read_stream,
+        write_stream,
+        _,
+    ):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+            # Use the search tool
+            result = await session.call_tool("search", {"query": "Python programming", "max_results": 5})
+            print(result)
+```
+
+**Note:** The URL must end with `/mcp/` (including the trailing slash).
+
 ## Available Tools
 
 ### 1. Search Tool
