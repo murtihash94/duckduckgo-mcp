@@ -1,11 +1,17 @@
 [project]
 name = "duckduckgo-mcp-server"
 version = "0.1.1"
-description = "MCP Server for searching via DuckDuckGo"
+description = "MCP Server for searching via DuckDuckGo on Databricks Apps"
 readme = "README.md"
 authors = [{ name = "Nick Clyde", email = "nick@clyde.tech" }]
 requires-python = ">=3.10"
-dependencies = ["beautifulsoup4>=4.13.3", "httpx>=0.28.1", "mcp[cli]>=1.3.0"]
+dependencies = [
+    "beautifulsoup4>=4.13.3",
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.10.0",
+    "fastapi>=0.115.12",
+    "uvicorn>=0.34.2",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -18,12 +24,21 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/nickclyde/duckduckgo-mcp-server"
-Issues = "https://github.com/nickclyde/duckduckgo-mcp-server/issues"
+Homepage = "https://github.com/murtihash94/duckduckgo-mcp"
+Issues = "https://github.com/murtihash94/duckduckgo-mcp/issues"
 
 [project.scripts]
 duckduckgo-mcp-server = "duckduckgo_mcp_server.server:main"
+duckduckgo-mcp-server-databricks = "duckduckgo_mcp_server.main:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "hatchling>=1.27.0",
+]
+
+[tool.hatch.build.hooks.custom]
+path = "hooks/apps_build.py"
