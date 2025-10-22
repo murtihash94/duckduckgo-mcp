@@ -206,7 +206,7 @@ class WebContentFetcher:
 
 
 # Initialize FastMCP server
-mcp = FastMCP("ddg-search")
+mcp = FastMCP("DuckDuckGo Search MCP Server on Databricks Apps")
 searcher = DuckDuckGoSearcher()
 fetcher = WebContentFetcher()
 
