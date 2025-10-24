@@ -42,7 +42,9 @@ class AppsBuildHook(BuildHookInterface):
         # write the name of the artifact to a requirements.txt file in the ./.build folder
         requirements_file = build_dir / "requirements.txt"
 
-        requirements_file.write_text(Path(artifact_path).name, encoding="utf-8")
+        requirements_file.write_text(
+            f"{Path(artifact_path).name}\nuv\n", encoding="utf-8"
+        )
 
         app_file = Path("app.yaml")
         if app_file.exists():
