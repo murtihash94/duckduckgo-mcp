@@ -12,6 +12,7 @@ A Model Context Protocol (MCP) server that provides web search capabilities thro
 
 - **Web Search**: Search DuckDuckGo with advanced rate limiting and result formatting
 - **Content Fetching**: Retrieve and parse webpage content with intelligent text extraction
+- **Email Sending**: Send emails via SMTP with support for HTML, attachments, and custom configurations
 - **Rate Limiting**: Built-in protection against rate limits for both search and content fetching
 - **Error Handling**: Comprehensive error handling and logging
 - **LLM-Friendly Output**: Results formatted specifically for large language model consumption
@@ -189,6 +190,72 @@ Fetches and parses content from a webpage.
 **Returns:**
 Cleaned and formatted text content from the webpage.
 
+### 3. Send Email Tool
+
+```python
+async def send_email(to: str, subject: str, body: str, is_html: bool = False) -> str
+```
+
+Send a simple email using SMTP configuration from environment variables.
+
+**Parameters:**
+- `to`: Recipient email address
+- `subject`: Email subject
+- `body`: Email body content
+- `is_html`: Whether body is HTML (default: False)
+
+**Returns:**
+Success message or error message.
+
+**Configuration:**
+Set the following environment variables (or create a `.env` file):
+```bash
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@example.com
+SMTP_PASS=your-app-password
+SMTP_FROM=your-email@example.com
+```
+
+### 4. Send Custom Email Tool
+
+```python
+async def send_custom_email(email: Dict[str, Any], smtp_config: Optional[Dict[str, Any]] = None) -> str
+```
+
+Send a custom email with full configuration options including CC, BCC, and attachments.
+
+**Parameters:**
+- `email`: Email message details:
+  - `to`: Recipient email address(es) (string or list)
+  - `cc`: CC email address(es) (optional, string or list)
+  - `bcc`: BCC email address(es) (optional, string or list)
+  - `subject`: Email subject
+  - `text`: Plain text email body (optional)
+  - `html`: HTML email body (optional)
+  - `attachments`: Email attachments (optional, list of dicts with filename, content, encoding)
+- `smtp_config`: SMTP server configuration (optional, uses environment if not provided):
+  - `host`: SMTP server host
+  - `port`: SMTP server port
+  - `secure`: Use SSL/TLS
+  - `auth`: {user: "email", pass: "password"}
+  - `from_email`: Sender email address
+
+**Returns:**
+Success message with details or error message.
+
+### 5. Test SMTP Connection Tool
+
+```python
+async def test_smtp_connection_tool() -> str
+```
+
+Test SMTP connection using configuration from environment variables.
+
+**Returns:**
+Connection test result or error message.
+
 ## Features in Detail
 
 ### Rate Limiting
@@ -203,6 +270,15 @@ Cleaned and formatted text content from the webpage.
 - Cleans up DuckDuckGo redirect URLs
 - Formats results for optimal LLM consumption
 - Truncates long content appropriately
+
+### Email Features
+
+- Support for plain text and HTML emails
+- Multiple recipients (TO, CC, BCC)
+- File attachments (base64 encoded)
+- Automatic connection method fallback (STARTTLS, implicit TLS, plain)
+- Gmail, Outlook, and custom SMTP server support
+- Environment-based configuration
 
 ### Error Handling
 
